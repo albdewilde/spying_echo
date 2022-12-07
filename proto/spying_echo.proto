@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package spyingecho;
+
+option go_package = "./spyingechobp";
+
+service SpyingEcho {
+    // Echo respond the thing you say
+    rpc Echo (EchoRequest) returns (EchoReply) {}
+    // Spy send all things that are say
+    rpc Spy (Empty) returns (stream EchoReply) {}
+}
+
+// EchoRequest regroup an used and his message
+message EchoRequest {
+    string Name = 1;
+    string Msg = 2;
+}
+
+// EchoReply is the response of an user's request
+message EchoReply {
+    string Msg = 1;
+}
+
+message Empty {}
