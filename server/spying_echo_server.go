@@ -12,34 +12,34 @@ import (
 type SpyingechoServer struct {
 	spyingechopb.UnimplementedSpyingEchoServer
 
-	// ss regroup all spys that we'll send messages to
-	ss []spy
+	// spies regroup all spies that we'll send messages to
+	spies Spies
 
 	// ers is a channel where we put all messages to send to spys
 	ers chan *spyingechopb.EchoRequest
 }
 
 func NewSpyingechoServer() *SpyingechoServer {
-	ses := &SpyingechoServer{
-		ss:  make([]spy, 0),
-		ers: make(chan *spyingechopb.EchoRequest),
+	server := &SpyingechoServer{
+		spies: newSpies(),
+		ers:   make(chan *spyingechopb.EchoRequest),
 	}
 
-	go ses.dispatch()
-	return ses
+	go server.dispatch()
+	return server
 }
 
-func (ses *SpyingechoServer) Echo(ctx context.Context, echoRequest *spyingechopb.EchoRequest) (*spyingechopb.EchoReply, error) {
-	ses.ers <- echoRequest
+func (server *SpyingechoServer) Echo(ctx context.Context, echoRequest *spyingechopb.EchoRequest) (*spyingechopb.EchoReply, error) {
+	server.ers <- echoRequest
 
 	log.Printf("%s said: %s", echoRequest.GetName(), echoRequest.GetMsg())
 
 	return &spyingechopb.EchoReply{Msg: fmt.Sprintf("You said: %s", echoRequest.GetMsg())}, nil
 }
 
-func (ses *SpyingechoServer) Spy(_ *spyingechopb.Empty, s spyingechopb.SpyingEcho_SpyServer) error {
+func (server *SpyingechoServer) Spy(_ *spyingechopb.Empty, stream spyingechopb.SpyingEcho_SpyServer) error {
 	// Add client to our spys list
-	ses.ss = append(ses.ss, spy{stream: s})
+	server.spies.Add(spy{stream: stream})
 	log.Println("A new spy is connected")
 
 	// Infinite loop to keep stream alive
@@ -48,27 +48,8 @@ func (ses *SpyingechoServer) Spy(_ *spyingechopb.Empty, s spyingechopb.SpyingEch
 	}
 }
 
-func (ses *SpyingechoServer) dispatch() {
-	for {
-		msg := <-ses.ers
-
-		// Send the message to all spy
-		for _, s := range ses.ss {
-			err := s.stream.Send(
-				&spyingechopb.EchoReply{
-					Msg: fmt.Sprintf(
-						"%s said: %s",
-						msg.GetName(),
-						msg.GetMsg(),
-					),
-				},
-			)
-
-			if err != nil {
-				log.Println(err)
-				// We may need to delete spy when they are disconnected
-			}
-
-		}
+func (server *SpyingechoServer) dispatch() {
+	for msg := range server.ers {
+		server.spies.Dispatch(msg)
 	}
 }
