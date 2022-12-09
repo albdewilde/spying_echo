@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package spyingecho;
 
-option go_package = "./spyingechobp";
+option go_package = "./spyingechopb";
 
 service SpyingEcho {
     // Echo respond the thing you say
