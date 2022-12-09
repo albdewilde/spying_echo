@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/albdewilde/spying_echo/grpc/spyingechopb"
 )
@@ -45,6 +46,7 @@ func (server *SpyingechoServer) Spy(_ *spyingechopb.Empty, stream spyingechopb.S
 	// Infinite loop to keep stream alive
 	// Sending is manage by ses.dispatch method
 	for {
+		time.Sleep(time.Minute * 5)
 	}
 }
 

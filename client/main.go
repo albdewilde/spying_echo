@@ -8,6 +8,7 @@ import (
 
 	"github.com/albdewilde/spying_echo/grpc/spyingechopb"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 const (
@@ -17,7 +18,7 @@ const (
 
 func main() {
 	var opts []grpc.DialOption
-	opts = append(opts, grpc.WithInsecure())
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
 
 	conn, err := grpc.Dial(fmt.Sprintf("%s:%d", HOST, PORT), opts...)
 	if err != nil {

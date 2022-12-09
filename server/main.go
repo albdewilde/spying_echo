@@ -21,7 +21,7 @@ func main() {
 		log.Fatalf("Failed to listen: %v", err)
 	}
 
-	fmt.Println("Server start on " + lis.Addr().String())
+	log.Println("Server start on " + lis.Addr().String())
 
 	// Create and start the gRPC server
 	var opts []grpc.ServerOption
